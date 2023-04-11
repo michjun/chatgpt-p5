@@ -1,5 +1,7 @@
 # chatgpt-p5
 Simple P5 playground and art projects mostly coded by chatGPT.
+This project is meant to explore Chat-GPT's ability to write
+code / participate in creative process.
 
 # P5
 P5 allows you to render beautiful patterns and animations with a
