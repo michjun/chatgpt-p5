@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>p5.js Playground</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI,
+          Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Helvetica Neue,
+          Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
+          Noto Color Emoji;
+      }
+      #editorContainer,
+      #previewContainer {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        height: 100%;
+        border: none;
+      }
+      #editorContainer {
+        left: 0;
+        width: 50%;
+        box-sizing: border-box;
+      }
+      #previewContainer {
+        right: 0;
+        width: 50%;
+      }
+      #topBar {
+        height: 44px;
+        background-color: #000000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-left: 10px;
+        box-sizing: border-box;
+      }
+      #leftButtons,
+      #rightButtons {
+        display: flex;
+        align-items: center;
+      }
+      #editor {
+        width: 100%;
+        height: calc(100% - 44px);
+        position: absolute;
+        top: 44px;
+        bottom: 0;
+        box-sizing: border-box;
+        padding: 10px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 6px 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="editorContainer">
+      <div id="topBar">
+        <div id="leftButtons">
+          <button id="openButton">Open File</button>
+          <button id="saveButton">Save As</button>
+        </div>
+        <div id="rightButtons">
+          <button id="runButton">Let's Go!!!</button>
+        </div>
+      </div>
+      <textarea id="editor"></textarea>
+    </div>
+    <div id="previewContainer">
+      <iframe id="preview" style="width: 100%; height: 100%"></iframe>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script>
+      const runButton = document.getElementById("runButton");
+      const saveButton = document.getElementById("saveButton");
+      const openButton = document.getElementById("openButton");
+      const editor = document.getElementById("editor");
+      const previewContainer = document.getElementById("previewContainer");
+      let preview = document.getElementById("preview");
+
+      document.addEventListener("DOMContentLoaded", function () {
+        editor.addEventListener("keydown", function (event) {
+          if (event.key === "Tab") {
+            // Prevent the default Tab behavior (focus navigation)
+            event.preventDefault();
+
+            let start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            let selectedText = editor.value.substring(start, end);
+            let modifiedText;
+
+            if (event.shiftKey) {
+              if (start === end) {
+                if (editor.value.substring(start - 2, start) === "  ") {
+                  start = start - 2;
+                  selectedText = editor.value.substring(start, end);
+                }
+              }
+              // Shift+Tab: Remove two spaces at the beginning of each selected line
+              modifiedText = selectedText.replace(/^ {1,2}/gm, "");
+            } else {
+              // Tab: Add two spaces at the beginning of each selected line
+              modifiedText = selectedText.replace(/^/gm, "  ");
+            }
+
+            // Replace the selected text with the modified text
+            editor.setRangeText(modifiedText, start, end, "select");
+
+            // Calculate the new end position of the selection
+            const newEnd = start + modifiedText.length;
+            if (start === end) {
+              editor.setSelectionRange(newEnd, newEnd);
+            } else {
+              editor.setSelectionRange(start, newEnd);
+            }
+          }
+        });
+      });
+
+      openButton.addEventListener("click", () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".js,.ts";
+        input.style.display = "none";
+        input.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              editor.value = e.target.result;
+            };
+            reader.readAsText(file);
+          }
+        });
+        document.body.appendChild(input);
+        input.click();
+        document.body.removeChild(input);
+      });
+
+      runButton.addEventListener("click", () => {
+        // Remove the existing iframe
+        previewContainer.removeChild(preview);
+
+        // Create a new iframe
+        preview = document.createElement("iframe");
+        preview.style.width = "100%";
+        preview.style.height = "100%";
+        previewContainer.appendChild(preview);
+
+        const code = editor.value;
+        const codeWithP5 =
+          `
+      <style>
+        body {
+          margin: 0;
+        }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"><` +
+          `/script>
+        <script>
+          ${code}
+        <` +
+          `/script>
+      `;
+        preview.contentWindow.document.open();
+        preview.contentWindow.document.write(codeWithP5);
+        preview.contentWindow.document.close();
+      });
+
+      saveButton.addEventListener("click", () => {
+        const defaultFileName = "p5_script.js";
+        const blob = new Blob([editor.value], {
+          type: "text/plain;charset=utf-8",
+        });
+        saveAs(blob, defaultFileName);
+      });
+    </script>
+  </body>
+</html>
