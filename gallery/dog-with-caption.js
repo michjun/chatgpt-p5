@@ -91,7 +91,7 @@ function draw() {
 
   pop();
 
-  angle = map(mouseX, 0, width, 0, TWO_PI + PI / 8) + PI;
+  angle = map(mouseX, 0, width, - PI / 4, TWO_PI + PI / 4) + PI;
 
   // Update tail wag speed
   if (mouseIsPressed) {
