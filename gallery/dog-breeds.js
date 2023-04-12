@@ -13,10 +13,8 @@ function setup() {
   angle = PI;
 }
 
-function keyPressed() {
-  if (key === "r" || key === "R") {
-    currentBreed = (currentBreed + 1) % breeds.length;
-  }
+function mouseClicked() {
+  currentBreed = (currentBreed + 1) % breeds.length;
 }
 
 function draw() {
